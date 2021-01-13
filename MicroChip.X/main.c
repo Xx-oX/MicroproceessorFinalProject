@@ -74,7 +74,7 @@
 
 /* function definitions */
 void init(void);
-void pwm(void);
+void PWM_init(void);
 void delay_us(int);
 void LCD_init(void);
 void LCD_data(char);           
@@ -93,7 +93,6 @@ int PWM_light = 0;
 /* funtion declarations */
 int main(void) {
     init();
-    pwm();
     out = 1;
     
     while(1){
@@ -222,9 +221,10 @@ void init(void)
     INTCON3bits.INT1IP = 0;
     
     LCD_init();
+    PWM_init();
 }
 
-void pwm(void)
+void PWM_init(void)
 {
     // setup pwm
     TRISC = 0x00;
