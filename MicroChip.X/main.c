@@ -63,6 +63,8 @@
 /* port connection */
 # define RS PORTCbits.RC0
 # define EN PORTCbits.RC1
+# define BTN_A PORTBbits.RB0
+# define BTN_B PORTBbits.RB1
 # define CCP1 LATCbits.LATC2
 # define LED_NOTIFY LATAbits.LA6
 # define LED_A LATAbits.LA0
@@ -126,7 +128,7 @@ void __interrupt(high_priority) Hi_ISR(void)
     out = 0;
     __delay_ms(200);
     
-    if(PORTB == 1){
+    if(BTN_A == 1){
         num = (num << 1) | 1;
         LED_NOTIFY = 1;
     }
@@ -197,15 +199,18 @@ void __interrupt(low_priority) Lo_ISR(void) {
 
 void init(void)
 {
+    // setup BTN_A & BTN_B
     PORTB = 0;
     LATB = 0;
     TRISBbits.TRISB0 = 1;
     TRISBbits.TRISB1 = 1;
+    // setup LEDs
     TRISA = 0;
     LATA = 0;
+
+    // setup interrupt
     ADCON1 = 0x0F;
     T0CON = 0b11111000;
-    
     TMR0L = 0;
     RCONbits.IPEN = 1;
     INTCONbits.GIEH = 1;
@@ -221,6 +226,7 @@ void init(void)
 
 void pwm(void)
 {
+    // setup pwm
     TRISC = 0x00;
     CCP1 = 0;
     T2CON = 0b01111101;  // prescaler=16
@@ -240,6 +246,7 @@ void delay_us(int value)
 
 void LCD_init(void)
 {
+    // setup lcd
     TRISC = 0x00;  // PORTC as output
     TRISD = 0x00;  // PORTD as output
     delay_us(25);
@@ -279,6 +286,7 @@ void LCD_send(const char addr, const char *str)
 }
 
 void trans(void){
+    // translate input to char
     if(num == 1 && lenth == 2)
         str[pos]='a';
     else if(num == 8 && lenth == 4)
