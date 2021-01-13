@@ -64,6 +64,11 @@
 # define RS PORTCbits.RC0
 # define EN PORTCbits.RC1
 # define CCP1 LATCbits.LATC2
+# define LED_NOTIFY LATAbits.LA6
+# define LED_A LATAbits.LA0
+# define LED_B LATAbits.LA1
+# define LED_C LATAbits.LA2
+# define LED_D LATAbits.LA3
 
 /* function definitions */
 void init(void);
@@ -91,6 +96,7 @@ int main(void) {
     
     while(1){
         if(PWM_light == 1){
+            // breath led
             for(int d = 1; d < PWM_VAL; d++){
                 if(PWM_light != 1){
                     break;
@@ -122,18 +128,16 @@ void __interrupt(high_priority) Hi_ISR(void)
     
     if(PORTB == 1){
         num = (num << 1) | 1;
-        LATA = 0b01000000;
+        LED_NOTIFY = 1;
     }
     else{
         num = (num << 1) | 0;
-        LATA = 0b01000000;
+        LED_NOTIFY = 1;
     }
     lenth = lenth + 1;
     __delay_ms(200);
-    //LATD = 0;
-    LATA = 0;
+    LED_NOTIFY = 0;
     INTCONbits.INT0IF = 0;
-    //LATD = 1;
     return;
 }
 
@@ -141,32 +145,53 @@ void __interrupt(low_priority) Lo_ISR(void) {
     CCPR1L = 0;
     PWM_light = 0;
     if(out == 1){
-        // LCD_cmd(0x01);  // clear
         LCD_init();
-        LATA = 0b01000000;
+        LED_NOTIFY = 1;
         LCD_send(FIRST_LINE_START, str);
-        if(str[0] == 'e'){
+
+        // led commands
+        if(str[0] == 'b' && str[1] == 'r'){
             PWM_light = 1;
         }
+
+        if(str[0] == 'l' && str[1] == 'a'){
+            LED_A = 1;
+        }
+
+        if(str[0] == 'l' && str[1] == 'b'){
+            LED_B = 1;
+        }
+
+        if(str[0] == 'l' && str[1] == 'c'){
+            LED_C = 1;
+        }
+
+        if(str[0] == 'l' && str[1] == 'd'){
+            LED_D = 1;
+        }
+        
+        if(str[0] == 'e' && str[1] == 'n' && str[2] == 'd'){
+            LED_A = 0;
+            LED_B = 0;
+            LED_C = 0;
+            LED_D = 0;
+        }
+        
+        // clear buffer
         for(int i=0; i<16; ++i)
             str[i] = '\0';
         pos = 0;
+
     }else{
         trans();
         out = 1;
         num = 0;
         lenth = 0;
-        LATA = 0b01000000;
+        LED_NOTIFY = 1;
     }
-    /*
-    if(LATD == 1)
-        LATD = 0;
-    else
-        LATD = 1;
-    */
     INTCON3bits.INT1IF = 0;
     __delay_ms(500);
-    LATA = 0;
+    LED_NOTIFY = 0;
     return;
 }
 
